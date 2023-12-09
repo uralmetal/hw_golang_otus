@@ -2,7 +2,6 @@ module github.com/uralmetal/hw_golang_otus/hw02_unpack_string
 
 go 1.21
 
-
 require github.com/stretchr/testify v1.7.0
 
 require (

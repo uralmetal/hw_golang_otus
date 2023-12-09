@@ -3,6 +3,7 @@ package hw03frequencyanalysis
 import (
 	"sort"
 	"strings"
+	"unicode"
 )
 
 type Pair struct {
@@ -14,15 +15,23 @@ func normalizeWord(word string) string {
 	/*
 		1. Приводим в к одному регистру
 		2. Очищаем от знаков препинания в конце и начале
-		3.
+		3. Словом так же являются -------, "dog,cat", "dog...cat", "dogcat"
 	*/
+
+	word = strings.ToLower(word)
+	if unicode.IsPunct(rune(word[0])) {
+		word = word[1:]
+	}
+	if len(word) > 0 && unicode.IsPunct(rune(word[len(word)-1])) {
+		word = word[0 : len(word)-1]
+	}
 	return word
 }
 
 func Top10(text string) []string {
 	frequency := make(map[string]int)
-	var top []Pair
-	var topWords []string
+	top := make([]Pair, 0)
+	topWords := make([]string, 0)
 	var topLen int
 
 	words := strings.Fields(text)
@@ -38,9 +47,8 @@ func Top10(text string) []string {
 	sort.Slice(top, func(i, j int) bool {
 		if top[i].Value != top[j].Value {
 			return top[i].Value > top[j].Value
-		} else {
-			return top[i].Key < top[j].Key
 		}
+		return top[i].Key < top[j].Key
 	})
 	if len(top) >= 10 {
 		topLen = 10

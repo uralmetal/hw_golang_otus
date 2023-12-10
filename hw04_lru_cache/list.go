@@ -117,9 +117,10 @@ func (linkedList *list) Remove(i *ListItem) {
 	// clear allocate memory
 	*i = ListItem{}
 }
+
 func (linkedList *list) MoveToFront(i *ListItem) {
 	// Lazy solution
-	// ToDo: change prev and next pointers without reallocation for improve perfomance
+	// ToDo: change prev and next pointers without reallocation for improve performance
 	value := i.Value
 	linkedList.Remove(i)
 	linkedList.PushFront(value)

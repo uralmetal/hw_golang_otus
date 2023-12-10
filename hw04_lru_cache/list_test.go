@@ -77,7 +77,7 @@ func TestPushBack(t *testing.T) {
 }
 
 func TestListRemove(t *testing.T) {
-	//ToDo: testing memory leaks, but it seems not required now
+	// ToDo: testing memory leaks, but it seems not required now
 	t.Run("remove with len = 1", func(t *testing.T) {
 		// current ----> *empty list*
 		l := NewList()
@@ -104,7 +104,6 @@ func TestListRemove(t *testing.T) {
 		require.Nil(t, l.Back().Next)
 		require.Nil(t, l.Front().Prev)
 		require.Nil(t, l.Back().Prev)
-
 	})
 
 	t.Run("remove back with len = 2", func(t *testing.T) {
@@ -138,7 +137,6 @@ func TestListRemove(t *testing.T) {
 		require.Equal(t, l.Front(), l.Back().Prev)
 		require.Nil(t, l.Front().Prev)
 		require.Nil(t, l.Back().Next)
-
 	})
 
 	t.Run("remove front with len = n", func(t *testing.T) {
@@ -156,7 +154,6 @@ func TestListRemove(t *testing.T) {
 		require.Equal(t, l.Front(), l.Back().Prev)
 		require.Nil(t, l.Front().Prev)
 		require.Nil(t, l.Back().Next)
-
 	})
 
 	t.Run("remove middle with len = n", func(t *testing.T) {

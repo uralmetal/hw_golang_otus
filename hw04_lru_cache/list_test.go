@@ -3,7 +3,7 @@ package hw04lrucache
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/require" //nolint:depguard
 )
 
 func TestPushFront(t *testing.T) {
@@ -207,6 +207,8 @@ func TestMoveToFront(t *testing.T) {
 			elems = append(elems, i.Value.(int))
 		}
 		require.Equal(t, []int{30, 10, 20}, elems)
+		require.Nil(t, l.Front().Prev)
+		require.Nil(t, l.Back().Next)
 	})
 
 	t.Run("move to front middle", func(t *testing.T) {
@@ -221,6 +223,8 @@ func TestMoveToFront(t *testing.T) {
 			elems = append(elems, i.Value.(int))
 		}
 		require.Equal(t, []int{20, 10, 30}, elems)
+		require.Nil(t, l.Front().Prev)
+		require.Nil(t, l.Back().Next)
 	})
 
 	t.Run("move to front front", func(t *testing.T) {
@@ -235,6 +239,79 @@ func TestMoveToFront(t *testing.T) {
 			elems = append(elems, i.Value.(int))
 		}
 		require.Equal(t, []int{10, 20, 30}, elems)
+		require.Nil(t, l.Front().Prev)
+		require.Nil(t, l.Back().Next)
+	})
+
+	t.Run("move to front with push back", func(t *testing.T) {
+		l := NewList()
+		back := l.PushFront(10)
+		l.PushFront(20)
+		l.PushFront(30)
+		l.MoveToFront(back)
+
+		elems := make([]int, 0, l.Len())
+		for i := l.Front(); i != nil; i = i.Next {
+			elems = append(elems, i.Value.(int))
+		}
+		require.Equal(t, []int{10, 30, 20}, elems)
+		require.Nil(t, l.Front().Prev)
+		require.Nil(t, l.Back().Next)
+	})
+
+	t.Run("move to middle with push middle", func(t *testing.T) {
+		l := NewList()
+		l.PushFront(10)
+		middle := l.PushFront(20)
+		l.PushFront(30)
+		l.MoveToFront(middle)
+
+		elems := make([]int, 0, l.Len())
+		for i := l.Front(); i != nil; i = i.Next {
+			elems = append(elems, i.Value.(int))
+		}
+		require.Equal(t, []int{20, 30, 10}, elems)
+		require.Nil(t, l.Front().Prev)
+		require.Nil(t, l.Back().Next)
+	})
+
+	t.Run("move to front with push front", func(t *testing.T) {
+		l := NewList()
+		l.PushFront(10)
+		l.PushFront(20)
+		front := l.PushFront(30)
+		l.MoveToFront(front)
+
+		elems := make([]int, 0, l.Len())
+		for i := l.Front(); i != nil; i = i.Next {
+			elems = append(elems, i.Value.(int))
+		}
+		require.Equal(t, []int{30, 20, 10}, elems)
+		require.Nil(t, l.Front().Prev)
+		require.Nil(t, l.Back().Next)
+	})
+	t.Run("complex", func(t *testing.T) {
+		l := NewList()
+		zero := l.PushFront(0)
+		require.Equal(t, []int{0}, l.IntValues())
+		one := l.PushFront(1)
+		require.Equal(t, []int{1, 0}, l.IntValues())
+		two := l.PushFront(2)
+		require.Equal(t, []int{2, 1, 0}, l.IntValues())
+		l.Remove(zero)
+		require.Equal(t, []int{2, 1}, l.IntValues())
+		three := l.PushFront(3)
+		require.Equal(t, []int{3, 2, 1}, l.IntValues())
+		l.MoveToFront(one)
+		require.Equal(t, []int{1, 3, 2}, l.IntValues())
+		l.MoveToFront(two)
+		require.Equal(t, []int{2, 1, 3}, l.IntValues())
+		l.Remove(three)
+		require.Equal(t, []int{2, 1}, l.IntValues())
+		l.PushFront(4)
+		require.Equal(t, []int{4, 2, 1}, l.IntValues())
+		l.MoveToFront(one)
+		require.Equal(t, []int{1, 4, 2}, l.IntValues())
 	})
 }
 

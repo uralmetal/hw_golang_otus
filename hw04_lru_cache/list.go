@@ -8,6 +8,7 @@ type List interface {
 	PushBack(v interface{}) *ListItem
 	Remove(i *ListItem)
 	MoveToFront(i *ListItem)
+	IntValues() []int
 }
 
 type ListItem struct {
@@ -119,9 +120,28 @@ func (linkedList *list) Remove(i *ListItem) {
 }
 
 func (linkedList *list) MoveToFront(i *ListItem) {
-	// Lazy solution
-	// ToDo: change prev and next pointers without reallocation for improve performance
-	value := i.Value
-	linkedList.Remove(i)
-	linkedList.PushFront(value)
+	previousItem := i.Prev
+	nextItem := i.Next
+
+	if previousItem == nil {
+		return
+	}
+	previousItem.Next = nextItem
+	if nextItem != nil {
+		nextItem.Prev = previousItem
+	} else {
+		linkedList.backItem = previousItem
+	}
+	linkedList.frontItem.Prev = i
+	i.Next = linkedList.frontItem
+	i.Prev = nil
+	linkedList.frontItem = i
+}
+
+func (linkedList *list) IntValues() []int {
+	elems := make([]int, 0, linkedList.Len())
+	for i := linkedList.Front(); i != nil; i = i.Next {
+		elems = append(elems, i.Value.(int))
+	}
+	return elems
 }

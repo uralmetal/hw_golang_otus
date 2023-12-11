@@ -14,13 +14,14 @@ type lruCache struct {
 	capacity int
 	queue    List
 	items    map[Key]*ListItem
-	mutex    sync.Mutex
 }
 
 type itemCache struct {
 	key   Key
 	value interface{}
 }
+
+var mutex sync.Mutex
 
 func NewCache(capacity int) Cache {
 	return &lruCache{
@@ -31,7 +32,7 @@ func NewCache(capacity int) Cache {
 }
 
 func (cache lruCache) Set(key Key, value interface{}) bool {
-	cache.mutex.Lock()
+	mutex.Lock()
 	item, exist := cache.items[key]
 	if exist {
 		cacheValue := item.Value.(itemCache)
@@ -39,7 +40,7 @@ func (cache lruCache) Set(key Key, value interface{}) bool {
 		item.Value = cacheValue
 		cache.items[key] = item
 		cache.queue.MoveToFront(item)
-		defer cache.mutex.Unlock()
+		defer mutex.Unlock()
 		return exist
 	}
 	if cache.queue.Len() >= cache.capacity {
@@ -52,30 +53,30 @@ func (cache lruCache) Set(key Key, value interface{}) bool {
 		value: value,
 	})
 	cache.items[key] = item
-	defer cache.mutex.Unlock()
+	defer mutex.Unlock()
 	return exist
 }
 
 func (cache lruCache) Get(key Key) (interface{}, bool) {
-	cache.mutex.Lock()
+	mutex.Lock()
 	item, exist := cache.items[key]
 	if exist {
 		cache.queue.MoveToFront(item)
 		cacheValue := item.Value.(itemCache)
-		defer cache.mutex.Unlock()
+		defer mutex.Unlock()
 		return cacheValue.value, exist
 	}
-	defer cache.mutex.Unlock()
+	defer mutex.Unlock()
 	return nil, exist
 }
 
 func (cache lruCache) Clear() {
-	cache.mutex.Lock()
+	mutex.Lock()
 	for k := range cache.items {
 		delete(cache.items, k)
 	}
 	for i := cache.queue.Front(); i != nil; i = i.Next {
 		cache.queue.Remove(i)
 	}
-	defer cache.mutex.Unlock()
+	defer mutex.Unlock()
 }

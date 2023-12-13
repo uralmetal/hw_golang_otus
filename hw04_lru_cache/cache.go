@@ -14,7 +14,7 @@ type lruCache struct {
 	capacity int
 	queue    List
 	items    map[Key]*ListItem
-	mutex    *sync.Mutex
+	mutex    sync.Mutex
 }
 
 type itemCache struct {
@@ -27,11 +27,10 @@ func NewCache(capacity int) Cache {
 		capacity: capacity,
 		queue:    NewList(),
 		items:    make(map[Key]*ListItem, capacity),
-		mutex:    new(sync.Mutex),
 	}
 }
 
-func (cache lruCache) Set(key Key, value interface{}) bool {
+func (cache *lruCache) Set(key Key, value interface{}) bool {
 	cache.mutex.Lock()
 	item, exist := cache.items[key]
 	if exist {
@@ -57,7 +56,7 @@ func (cache lruCache) Set(key Key, value interface{}) bool {
 	return exist
 }
 
-func (cache lruCache) Get(key Key) (interface{}, bool) {
+func (cache *lruCache) Get(key Key) (interface{}, bool) {
 	cache.mutex.Lock()
 	item, exist := cache.items[key]
 	if exist {
@@ -70,7 +69,7 @@ func (cache lruCache) Get(key Key) (interface{}, bool) {
 	return nil, exist
 }
 
-func (cache lruCache) Clear() {
+func (cache *lruCache) Clear() {
 	cache.mutex.Lock()
 	for k := range cache.items {
 		delete(cache.items, k)

@@ -6,7 +6,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/require" //nolint:depguard
 )
 
 func TestCache(t *testing.T) {
@@ -49,14 +49,61 @@ func TestCache(t *testing.T) {
 		require.Nil(t, val)
 	})
 
-	t.Run("purge logic", func(t *testing.T) {
+	t.Run("clear", func(t *testing.T) {
 		// Write me
+		c := NewCache(3)
+		for i := 0; i < 2; i++ {
+			c.Set(Key(strconv.Itoa(i)), i)
+		}
+		c.Clear()
+		val, ok := c.Get("0")
+		require.False(t, ok)
+		require.Nil(t, val)
+	})
+
+	t.Run("purge logic", func(t *testing.T) {
+		// a lot of set
+		c := NewCache(3)
+		for i := 0; i < 4; i++ {
+			c.Set(Key(strconv.Itoa(i)), i)
+		}
+		val, ok := c.Get("0") // [3,2,1]
+		require.False(t, ok)
+		require.Nil(t, val)
+
+		// set exist item and order
+		wasInCache := c.Set("1", 1) // [1,3,2]
+		require.True(t, wasInCache)
+		val, ok = c.Get("2") // [2,1,3]
+		require.True(t, ok)
+		require.Equal(t, 2, val)
+
+		// set new item and order
+		wasInCache = c.Set("4", 4) // [4,2,1]
+		require.False(t, wasInCache)
+
+		val, ok = c.Get("3") // [4,2,1]
+		require.False(t, ok)
+		require.Nil(t, val)
+
+		// get exist item and order
+		val, ok = c.Get("1") // [1,4,2]
+		require.True(t, ok)
+		require.Equal(t, 1, val)
+		wasInCache = c.Set("5", 5) // [5,1,4]
+		require.False(t, wasInCache)
+		val, ok = c.Get("1") // [1,5,4]
+		require.True(t, ok)
+		require.Equal(t, 1, val)
+
+		// get not exist item and order
+		val, ok = c.Get("0") // [1,5,4]
+		require.False(t, ok)
+		require.Nil(t, val)
 	})
 }
 
-func TestCacheMultithreading(t *testing.T) {
-	t.Skip() // Remove me if task with asterisk completed.
-
+func TestCacheMultithreading(_ *testing.T) {
 	c := NewCache(10)
 	wg := &sync.WaitGroup{}
 	wg.Add(2)

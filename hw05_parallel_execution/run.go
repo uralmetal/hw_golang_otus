@@ -3,60 +3,48 @@ package hw05parallelexecution
 import (
 	"errors"
 	"sync"
+	"sync/atomic"
 )
 
 var ErrErrorsLimitExceeded = errors.New("errors limit exceeded")
+var ErrInvalidParameters = errors.New("errors invalid parameters")
 
 type Task func() error
 
-func worker(task Task, output chan error, wg *sync.WaitGroup) {
+func worker(tasks []Task, m *int64, wg *sync.WaitGroup) {
 	wg.Add(1)
-	output <- task()
+	for _, task := range tasks {
+		err := task()
+		if err != nil {
+			atomic.AddInt64(m, -1)
+		}
+		if atomic.LoadInt64(m) <= 0 {
+			break
+		}
+	}
 	wg.Done()
-}
-
-func workerPool(input chan Task, output chan error, wg *sync.WaitGroup) {
-	for task := range input {
-		go worker(task, output, wg)
-	}
-	wg.Wait()
-}
-
-func launcher(tasks []Task, input chan Task) {
-	for task := range tasks {
-		input <- task
-	}
 }
 
 // Run starts tasks in n goroutines and stops its work when receiving m errors from tasks.
 func Run(tasks []Task, n, m int) error {
 	var wg sync.WaitGroup
-	var firstAppendCount int
-	input := make(chan Task, n)
-	output := make(chan error, 1)
+	errorCount := (int64)(m)
+	workersTasks := make(map[int][]Task)
 
-	wg.Add(1)
-	go launcher(tasks, input)
-	go workerPool(input, output, &wg)
-	if len(tasks) > n {
-		firstAppendCount = n
-	} else {
-		firstAppendCount = len(tasks)
+	if m <= 0 || n <= 0 {
+		return ErrErrorsLimitExceeded
 	}
-	for i := 0; i < firstAppendCount-1; i++ {
-		input <- tasks[i]
+	for i, task := range tasks {
+		workersTasks[i%n] = append(workersTasks[i%n], task)
 	}
-	wg.Done()
-	for i := firstAppendCount; i < len(tasks); i++ {
-		taskError := <-output
-		if taskError != nil {
-			m--
+	for i := range workersTasks {
+		if len(workersTasks) > 0 {
+			go worker(workersTasks[i], &errorCount, &wg)
 		}
-		if m <= 0 {
-			return ErrErrorsLimitExceeded
-		}
-		input <- tasks[i]
 	}
-
+	wg.Wait()
+	if errorCount <= 0 {
+		return ErrErrorsLimitExceeded
+	}
 	return nil
 }

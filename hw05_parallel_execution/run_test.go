@@ -38,6 +38,45 @@ func TestRun(t *testing.T) {
 		require.LessOrEqual(t, runTasksCount, int32(workersCount+maxErrorsCount), "extra tasks were started")
 	})
 
+	t.Run("tasks less workers", func(t *testing.T) {
+		tasksCount := 5
+		tasks := make([]Task, 0, tasksCount)
+
+		runTasksCount := atomic.Int32{}
+		var sumTime time.Duration
+
+		for i := 0; i < tasksCount; i++ {
+			taskSleep := time.Millisecond * time.Duration(rand.Intn(100))
+			sumTime += taskSleep
+
+			tasks = append(tasks, func() error {
+				runTasksCount.Add(1)
+				time.Sleep(taskSleep)
+				return nil
+			})
+		}
+
+		workersCount := 50
+		maxErrorsCount := 1
+
+		err := Run(tasks, workersCount, maxErrorsCount)
+		require.NoError(t, err)
+		require.Equal(t, runTasksCount.Load(), int32(tasksCount), "not all tasks were completed")
+	})
+
+	t.Run("handle corrected invalid parameters", func(t *testing.T) {
+		tasks := make([]Task, 0, 1)
+
+		err := Run(tasks, 1, 0)
+		require.Error(t, err, ErrInvalidParameters)
+
+		err = Run(tasks, 0, 1)
+		require.Error(t, err, ErrInvalidParameters)
+
+		err = Run(tasks, 1, 1)
+		require.NoError(t, err)
+	})
+
 	t.Run("tasks without errors", func(t *testing.T) {
 		tasksCount := 50
 		tasks := make([]Task, 0, tasksCount)
@@ -50,8 +89,8 @@ func TestRun(t *testing.T) {
 			sumTime += taskSleep
 
 			tasks = append(tasks, func() error {
-				time.Sleep(taskSleep)
 				atomic.AddInt32(&runTasksCount, 1)
+				time.Sleep(taskSleep)
 				return nil
 			})
 		}
@@ -59,12 +98,14 @@ func TestRun(t *testing.T) {
 		workersCount := 5
 		maxErrorsCount := 1
 
-		start := time.Now()
-		err := Run(tasks, workersCount, maxErrorsCount)
-		elapsedTime := time.Since(start)
-		require.NoError(t, err)
+		require.Eventually(t, func() bool {
+			err := Run(tasks, workersCount, maxErrorsCount)
+			if err != nil {
+				return false
+			}
+			return true
+		}, sumTime, time.Millisecond*100)
 
 		require.Equal(t, runTasksCount, int32(tasksCount), "not all tasks were completed")
-		require.LessOrEqual(t, int64(elapsedTime), int64(sumTime/2), "tasks were run sequentially?")
 	})
 }

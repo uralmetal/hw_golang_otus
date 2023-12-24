@@ -15,7 +15,6 @@ type Task func() error
 
 func worker(tasks []Task, m *int64, wg *sync.WaitGroup) {
 	defer wg.Done()
-	wg.Add(1)
 	for _, task := range tasks {
 		err := task()
 		if err != nil {
@@ -40,6 +39,7 @@ func Run(tasks []Task, n, m int) error {
 	}
 	for i := range workersTasks {
 		if len(workersTasks) > 0 {
+			wg.Add(1)
 			go worker(workersTasks[i], &errorCount, &wg)
 		}
 	}

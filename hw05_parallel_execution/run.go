@@ -6,8 +6,10 @@ import (
 	"sync/atomic"
 )
 
-var ErrErrorsLimitExceeded = errors.New("errors limit exceeded")
-var ErrInvalidParameters = errors.New("errors invalid parameters")
+var (
+	ErrErrorsLimitExceeded = errors.New("errors limit exceeded")
+	ErrInvalidParameters   = errors.New("errors invalid parameters")
+)
 
 type Task func() error
 
@@ -38,7 +40,6 @@ func Run(tasks []Task, n, m int) error {
 	}
 	for i := range workersTasks {
 		if len(workersTasks) > 0 {
-			//wg.Add(1)
 			go worker(workersTasks[i], &errorCount, &wg)
 		}
 	}

@@ -25,7 +25,6 @@ func worker(tasks []Task, m *int64, wg *sync.WaitGroup) {
 	}
 }
 
-// Run starts tasks in n goroutines and stops its work when receiving m errors from tasks.
 func Run(tasks []Task, n, m int) error {
 	var wg sync.WaitGroup
 	errorCount := (int64)(m)

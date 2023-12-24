@@ -12,6 +12,7 @@ var ErrInvalidParameters = errors.New("errors invalid parameters")
 type Task func() error
 
 func worker(tasks []Task, m *int64, wg *sync.WaitGroup) {
+	defer wg.Done()
 	wg.Add(1)
 	for _, task := range tasks {
 		err := task()
@@ -22,7 +23,6 @@ func worker(tasks []Task, m *int64, wg *sync.WaitGroup) {
 			break
 		}
 	}
-	wg.Done()
 }
 
 // Run starts tasks in n goroutines and stops its work when receiving m errors from tasks.
@@ -39,6 +39,7 @@ func Run(tasks []Task, n, m int) error {
 	}
 	for i := range workersTasks {
 		if len(workersTasks) > 0 {
+			//wg.Add(1)
 			go worker(workersTasks[i], &errorCount, &wg)
 		}
 	}

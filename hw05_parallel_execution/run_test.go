@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/require" //nolint:depguard
 	"go.uber.org/goleak"
 )
 
@@ -100,10 +100,7 @@ func TestRun(t *testing.T) {
 
 		require.Eventually(t, func() bool {
 			err := Run(tasks, workersCount, maxErrorsCount)
-			if err != nil {
-				return false
-			}
-			return true
+			return err == nil
 		}, sumTime, time.Millisecond*100)
 
 		require.Equal(t, runTasksCount, int32(tasksCount), "not all tasks were completed")

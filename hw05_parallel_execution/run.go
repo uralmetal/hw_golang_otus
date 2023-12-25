@@ -13,9 +13,9 @@ var (
 
 type Task func() error
 
-func worker(tasks []Task, m *int64, wg *sync.WaitGroup) {
+func worker(tasks chan Task, m *int64, wg *sync.WaitGroup) {
 	defer wg.Done()
-	for _, task := range tasks {
+	for task := range tasks {
 		err := task()
 		if err != nil {
 			atomic.AddInt64(m, -1)
@@ -29,19 +29,18 @@ func worker(tasks []Task, m *int64, wg *sync.WaitGroup) {
 func Run(tasks []Task, n, m int) error {
 	var wg sync.WaitGroup
 	errorCount := (int64)(m)
-	workersTasks := make(map[int][]Task)
+	workersTasks := make(chan Task, len(tasks))
 
 	if m <= 0 || n <= 0 {
 		return ErrErrorsLimitExceeded
 	}
-	for i, task := range tasks {
-		workersTasks[i%n] = append(workersTasks[i%n], task)
+	for _, task := range tasks {
+		workersTasks <- task
 	}
-	for i := range workersTasks {
-		if len(workersTasks) > 0 {
-			wg.Add(1)
-			go worker(workersTasks[i], &errorCount, &wg)
-		}
+	close(workersTasks)
+	for i := 0; i < n; i++ {
+		wg.Add(1)
+		go worker(workersTasks, &errorCount, &wg)
 	}
 	wg.Wait()
 	if errorCount <= 0 {

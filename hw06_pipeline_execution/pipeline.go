@@ -17,7 +17,7 @@ func terminateStage(in In, done In) Out {
 			if ok {
 				out <- v
 			} else {
-				close(out)
+				break
 			}
 		}
 	}()

@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	sleepPerStage = time.Millisecond * 200
+	sleepPerStage = time.Millisecond * 100
 	fault         = sleepPerStage / 2
 )
 

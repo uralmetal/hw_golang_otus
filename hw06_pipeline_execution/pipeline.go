@@ -25,6 +25,9 @@ func terminateStage(in In, done In) Out {
 }
 
 func ExecutePipeline(in In, done In, stages ...Stage) Out {
+	if in == nil {
+		return nil
+	}
 	if done != nil {
 		in = terminateStage(in, done)
 	}

@@ -86,7 +86,7 @@ func TestCopy(t *testing.T) {
 		require.NoError(t, err)
 		copyContent, err := os.ReadFile(testFileName)
 		require.NoError(t, err)
-		require.Equal(t, randomText[:testLimit+1], copyContent)
+		require.Equal(t, randomText[:testLimit], copyContent)
 	})
 
 	t.Run("test overwrite file", func(t *testing.T) {

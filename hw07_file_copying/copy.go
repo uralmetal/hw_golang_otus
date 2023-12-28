@@ -14,29 +14,29 @@ var (
 	ErrInvalidParameter      = errors.New("invalid parameter")
 )
 
-const (
-	chunk = int64(1024)
-)
-
 func copySource(source, destination *os.File, limit int64) error {
-	var err error
-	var chunkSize int64
-	bar := pb.Start64(limit)
 
-	for i := int64(0); i < limit; i += chunk {
-		if i+chunk > limit {
-			chunkSize = limit % chunk
-		} else {
-			chunkSize = chunk
-		}
-		_, err = io.CopyN(destination, source, chunkSize)
-		bar.Add64(chunkSize)
-		if err != nil {
-			return err
-		}
+	bar := pb.Full.Start64(limit)
+	//reader := io.LimitReader(io.Rea
+	barReader := bar.NewProxyReader(source)
+	defer bar.Finish()
+	//for i := int64(0); i < limit; i += chunk {
+	//	if i+chunk > limit {
+	//		chunkSize = limit % chunk
+	//	} else {
+	//		chunkSize = chunk
+	//	}
+	//
+	//	bar.Add64(chunkSize)
+	//	if err != nil {
+	//return err
+	//}
+	//}
+	copiedBytes, err := io.CopyN(destination, barReader, limit)
+	if copiedBytes != limit {
+		return ErrInvalidParameter
 	}
-	bar.Finish()
-	return nil
+	return err
 }
 
 func Copy(fromPath, toPath string, offset, limit int64) error {
@@ -59,7 +59,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	if offset >= sourceSize {
 		return ErrOffsetExceedsFileSize
 	}
-	destination, err := os.OpenFile(toPath, os.O_CREATE|os.O_WRONLY, sourceStat.Mode())
+	destination, err := os.OpenFile(toPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, sourceStat.Mode())
 	if err != nil {
 		// Не удалось создать файл-копию:
 		return err

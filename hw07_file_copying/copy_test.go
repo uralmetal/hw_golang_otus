@@ -69,14 +69,36 @@ func TestCopy(t *testing.T) {
 		require.Equal(t, randomText, copyContent)
 	})
 
-	t.Run("test limit", func(t *testing.T) {
-		testFileName := testFile.Name() + "_test_limit"
-		testLimit := int64(100)
+	t.Run("test limit 10", func(t *testing.T) {
+		testFileName := testFile.Name() + "_test_limit_10"
+		testLimit := int64(10)
 		err := Copy(testFile.Name(), testFileName, 0, testLimit)
 		require.NoError(t, err)
 		copyContent, err := os.ReadFile(testFileName)
 		require.NoError(t, err)
 		require.Equal(t, randomText[:testLimit], copyContent)
+	})
+
+	t.Run("test limit 100", func(t *testing.T) {
+		testFileName := testFile.Name() + "_test_limit_10"
+		testLimit := int64(100)
+		err := Copy(testFile.Name(), testFileName, 0, testLimit)
+		require.NoError(t, err)
+		copyContent, err := os.ReadFile(testFileName)
+		require.NoError(t, err)
+		require.Equal(t, randomText[:testLimit+1], copyContent)
+	})
+
+	t.Run("test overwrite file", func(t *testing.T) {
+		testFileName := testFile.Name() + "_test_overwrite"
+		testLimit := int64(100)
+		err := Copy(testFile.Name(), testFileName, 0, testLimit)
+		require.NoError(t, err)
+		err = Copy(testFile.Name(), testFileName, 0, 0)
+		require.NoError(t, err)
+		copyContent, err := os.ReadFile(testFileName)
+		require.NoError(t, err)
+		require.Equal(t, randomText, copyContent)
 	})
 
 	t.Run("test offset", func(t *testing.T) {

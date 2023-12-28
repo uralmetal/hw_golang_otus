@@ -29,7 +29,7 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Println("Run copy file from ", from, " to ", to, " with limit=", limit, " and offset=", offset)
-	err := Copy(from, to, limit, offset)
+	err := Copy(from, to, offset, limit)
 	if err != nil {
 		fmt.Println("Runtime error:\n", err)
 		os.Exit(1)

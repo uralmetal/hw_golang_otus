@@ -15,23 +15,9 @@ var (
 )
 
 func copySource(source, destination *os.File, limit int64) error {
-
 	bar := pb.Full.Start64(limit)
-	//reader := io.LimitReader(io.Rea
 	barReader := bar.NewProxyReader(source)
 	defer bar.Finish()
-	//for i := int64(0); i < limit; i += chunk {
-	//	if i+chunk > limit {
-	//		chunkSize = limit % chunk
-	//	} else {
-	//		chunkSize = chunk
-	//	}
-	//
-	//	bar.Add64(chunkSize)
-	//	if err != nil {
-	//return err
-	//}
-	//}
 	copiedBytes, err := io.CopyN(destination, barReader, limit)
 	if copiedBytes != limit {
 		return ErrInvalidParameter
@@ -61,7 +47,6 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	}
 	destination, err := os.OpenFile(toPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, sourceStat.Mode())
 	if err != nil {
-		// Не удалось создать файл-копию:
 		return err
 	}
 	defer destination.Close()

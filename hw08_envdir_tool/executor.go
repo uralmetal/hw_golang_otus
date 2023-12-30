@@ -36,6 +36,7 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 		if errors.As(err, &exitError) {
 			return exitError.ExitCode()
 		}
+		fmt.Println("Cmd run error:", err)
 		return 1
 	}
 	return 0

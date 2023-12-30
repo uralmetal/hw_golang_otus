@@ -26,7 +26,7 @@ expected='test'
 
 [ "${result}" = "${expected}" ] || (echo -e "invalid output: ${result}" && exit 1)
 #check stderr
-./go-envdir "$(pwd)/testdata/env" "ls -test 2> err"
+./go-envdir "$(pwd)/testdata/env" "ls -test 2> err" || true
 result=$(cat err)
 rm err
 [ "${result}" != "" ] || (echo -e "invalid output: ${result}" && exit 1)

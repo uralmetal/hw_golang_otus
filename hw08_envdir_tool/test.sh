@@ -30,7 +30,7 @@ ls -test 2> errOriginal || true
 expected=$(cat errOriginal)
 rm errOriginal
 
-./go-envdir "$(pwd)/testdata/env" "ls -test" 2> errEnvDir || true
+./go-envdir "$(pwd)/testdata/env" "/bin/bash" "-c" "ls -test" 2> errEnvDir || true
 result=$(cat errEnvDir)
 rm errEnvDir
 

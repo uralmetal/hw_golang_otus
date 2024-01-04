@@ -62,4 +62,14 @@ func TestTelnetClient(t *testing.T) {
 
 		wg.Wait()
 	})
+	t.Run("timeout", func(t *testing.T) {
+		timeout, err := time.ParseDuration("5s")
+		require.NoError(t, err)
+		client := NewTelnetClient("test.com:12345", timeout, nil, nil)
+		start := time.Now()
+		require.Error(t, client.Connect())
+		elapsed := time.Since(start)
+		require.LessOrEqual(t, elapsed, 5500*time.Millisecond)
+		require.GreaterOrEqual(t, elapsed, 4500*time.Millisecond)
+	})
 }

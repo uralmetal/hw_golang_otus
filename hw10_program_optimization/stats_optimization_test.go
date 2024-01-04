@@ -50,6 +50,27 @@ func TestGetDomainStat_Time_And_Memory(t *testing.T) {
 	require.Less(t, mem, memoryLimit, "the program is too greedy")
 }
 
+func BenchmarkGetDomainStat(b *testing.B) {
+	b.Helper()
+	b.StopTimer()
+
+	r, err := zip.OpenReader("testdata/users.dat.zip")
+	require.NoError(b, err)
+	defer r.Close()
+
+	require.Equal(b, 1, len(r.File))
+
+	data, err := r.File[0].Open()
+	require.NoError(b, err)
+
+	b.StartTimer()
+	stat, err := GetDomainStat(data, "biz")
+	b.StopTimer()
+	require.NoError(b, err)
+
+	require.Equal(b, expectedBizStat, stat)
+}
+
 var expectedBizStat = DomainStat{
 	"abata.biz":         25,
 	"abatz.biz":         25,

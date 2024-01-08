@@ -2,14 +2,61 @@ package main
 
 import (
 	"errors"
+	"io"
+	"os"
+
+	"github.com/cheggaaa/pb/v3" //nolint:depguard
 )
 
 var (
 	ErrUnsupportedFile       = errors.New("unsupported file")
 	ErrOffsetExceedsFileSize = errors.New("offset exceeds file size")
+	ErrInvalidParameter      = errors.New("invalid parameter")
 )
 
+func copySource(source, destination *os.File, limit int64) error {
+	bar := pb.Full.Start64(limit)
+	barReader := bar.NewProxyReader(source)
+	defer bar.Finish()
+	copiedBytes, err := io.CopyN(destination, barReader, limit)
+	if copiedBytes != limit {
+		return ErrInvalidParameter
+	}
+	return err
+}
+
 func Copy(fromPath, toPath string, offset, limit int64) error {
-	// Place your code here.
-	return nil
+	if offset < 0 || limit < 0 {
+		return ErrInvalidParameter
+	}
+	source, err := os.OpenFile(fromPath, os.O_RDONLY, 0o644)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+	sourceStat, err := source.Stat()
+	if err != nil {
+		return err
+	}
+	if sourceStat.IsDir() {
+		return ErrUnsupportedFile
+	}
+	sourceSize := sourceStat.Size()
+	if offset >= sourceSize {
+		return ErrOffsetExceedsFileSize
+	}
+	destination, err := os.OpenFile(toPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, sourceStat.Mode())
+	if err != nil {
+		return err
+	}
+	defer destination.Close()
+
+	_, err = source.Seek(offset, 0)
+	if err != nil {
+		return err
+	}
+	if limit > sourceSize-offset || limit == 0 {
+		limit = sourceSize - offset
+	}
+	return copySource(source, destination, limit)
 }

@@ -1,0 +1,17 @@
+goos: windows
+goarch: amd64
+pkg: github.com/fixme_my_friend/hw10_program_optimization
+cpu: 11th Gen Intel(R) Core(TM) i7-1185G7 @ 3.00GHz
+BenchmarkGetDomainStat
+BenchmarkGetDomainStat-8   	1000000000	         0.6977 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGetDomainStat-8   	1000000000	         0.6908 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGetDomainStat-8   	1000000000	         0.7907 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGetDomainStat-8   	     333	   3045367 ns/op	  972321 B/op	    9445 allocs/op
+BenchmarkGetDomainStat-8   	1000000000	         0.6713 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGetDomainStat-8   	1000000000	         0.8774 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGetDomainStat-8   	1000000000	         0.6968 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGetDomainStat-8   	1000000000	         0.6827 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGetDomainStat-8   	    1610	    709447 ns/op	  201154 B/op	    1953 allocs/op
+BenchmarkGetDomainStat-8   	       1	2678442000 ns/op	323933152 B/op	 3145402 allocs/op
+PASS
+ok  	github.com/fixme_my_friend/hw10_program_optimization	241.487s

@@ -20,6 +20,21 @@ EMPTY is ()
 arguments are arg1=1 arg2=2'
 
 [ "${result}" = "${expected}" ] || (echo -e "invalid output: ${result}" && exit 1)
+# check stdin
+result=$(echo test | ./go-envdir "$(pwd)/testdata/env" "cat")
+expected='test'
+
+[ "${result}" = "${expected}" ] || (echo -e "invalid output: ${result}" && exit 1)
+#check stderr
+ls -test 2> errOriginal || true
+expected=$(cat errOriginal)
+rm errOriginal
+
+./go-envdir "$(pwd)/testdata/env" "/bin/bash" "-c" "ls -test" 2> errEnvDir || true
+result=$(cat errEnvDir)
+rm errEnvDir
+
+[ "${result}" = "${expected}" ] || (echo -e "invalid output: ${result}" && exit 1)
 
 rm -f go-envdir
 echo "PASS"

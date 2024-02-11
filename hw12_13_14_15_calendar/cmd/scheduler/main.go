@@ -3,13 +3,11 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/spf13/cobra"
 	"github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/app"
 	"github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/server/http"
@@ -19,36 +17,20 @@ import (
 var configFile string
 
 func init() {
-	rootCmd.AddCommand(versionCmd)
-	flag.StringVar(&configFile, "config", "configs/calendar.yaml", "Path to configuration file")
-}
-
-func init() {
-
-}
-
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Print the version number of Hugo",
-	Long:  `All software has versions. This is Hugo's`,
-	Run: func(cmd *cobra.Command, args []string) {
-		printVersion()
-	},
+	flag.StringVar(&configFile, "config", "configs/scheduler.yaml", "Path to configuration file")
 }
 
 func main() {
 	flag.Parse()
 
-	//if flag.Arg(0) == "version" {
-	//	printVersion()
-	//	return
-	//}
-	config, err := NewConfig(configFile)
-	if err != nil {
-		fmt.Println("Error handle config:", err)
-		os.Exit(1)
+	if flag.Arg(0) == "version" {
+		printVersion()
+		return
 	}
+
+	config := NewConfig()
 	logg := logger.New(config.Logger.Level)
+
 	storage := memorystorage.New()
 	calendar := app.New(logg, storage)
 

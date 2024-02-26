@@ -5,6 +5,11 @@ import (
 	"os"
 )
 
+type LoggerConf struct {
+	Level string `yaml:"level"`
+	// TODO
+}
+
 func ParseConfig(path string, config interface{}) error {
 	yamlFile, err := os.ReadFile(path)
 	if err != nil {

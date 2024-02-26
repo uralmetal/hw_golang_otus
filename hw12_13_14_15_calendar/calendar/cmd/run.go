@@ -1,48 +1,48 @@
-package main
+package cmd
 
 import (
 	"context"
-	"flag"
 	"fmt"
+	"github.com/spf13/cobra"
+	"github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/app"
+	configHandler "github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/config"
+	"github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/logger"
+	internalhttp "github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/server/http"
+	memorystorage "github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/storage/memory"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/spf13/cobra"
-	"github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/app"
-	"github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/logger"
-	internalhttp "github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/storage/memory"
 )
 
 var configFile string
 
 func init() {
-	rootCmd.AddCommand(versionCmd)
-	flag.StringVar(&configFile, "config", "configs/calendar.yaml", "Path to configuration file")
+	rootCmd.AddCommand(runCmd)
+	runCmd.PersistentFlags().StringVar(&configFile, "config", "configs/calendar.yaml", "config file (default is configs/calendar.yaml)")
 }
 
-func init() {
-
-}
-
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Print the version number of Hugo",
-	Long:  `All software has versions. This is Hugo's`,
+var runCmd = &cobra.Command{
+	Use:   "run",
+	Short: "Run application",
+	Long:  `All software has versions. This is application`,
 	Run: func(cmd *cobra.Command, args []string) {
-		printVersion()
+		run()
 	},
 }
 
-func main() {
-	flag.Parse()
+type Config struct {
+	Logger configHandler.LoggerConf `yaml:"logger"`
+	// TODO
+}
 
-	//if flag.Arg(0) == "version" {
-	//	printVersion()
-	//	return
-	//}
+func NewConfig(path string) (Config, error) {
+	var config Config
+	err := configHandler.ParseConfig(path, &config)
+	return config, err
+}
+
+func run() {
 	config, err := NewConfig(configFile)
 	if err != nil {
 		fmt.Println("Error handle config:", err)

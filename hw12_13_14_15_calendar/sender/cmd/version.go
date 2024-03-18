@@ -14,6 +14,6 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version number of application",
 	Long:  `All software has versions. This is application`,
 	Run: func(cmd *cobra.Command, args []string) {
-		version.PrintVersion(version.JSONVersion)
+		version.PrintVersion()
 	},
 }

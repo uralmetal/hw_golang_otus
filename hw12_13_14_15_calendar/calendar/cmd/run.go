@@ -36,14 +36,9 @@ type Config struct {
 	// TODO
 }
 
-func NewConfig(path string) (Config, error) {
-	var config Config
-	err := configHandler.ParseConfig(path, &config)
-	return config, err
-}
-
 func run() {
-	config, err := NewConfig(configFile)
+	var config Config
+	err := configHandler.NewConfig(configFile, &config)
 	if err != nil {
 		fmt.Println("Error handle config:", err)
 		os.Exit(1)

@@ -3,6 +3,7 @@ package sqlstorage
 import "context"
 
 type Storage struct { // TODO
+
 }
 
 func New() *Storage {

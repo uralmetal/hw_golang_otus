@@ -10,6 +10,11 @@ type LoggerConf struct {
 	// TODO
 }
 
+func NewConfig(path string, config interface{}) error {
+	err := ParseConfig(path, &config)
+	return err
+}
+
 func ParseConfig(path string, config interface{}) error {
 	yamlFile, err := os.ReadFile(path)
 	if err != nil {

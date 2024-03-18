@@ -1,36 +1,54 @@
-package main
+package cmd
 
 import (
 	"context"
-	"flag"
+	"fmt"
+	"github.com/spf13/cobra"
+	"github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/app"
+	configHandler "github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/config"
+	"github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/logger"
+	internalhttp "github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/server/http"
+	memorystorage "github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/storage/memory"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/app"
-	"github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/logger"
-	internalhttp "github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/uralmetal/hw_golang_otus/hw12_13_14_15_calendar/internal/storage/memory"
 )
 
 var configFile string
 
 func init() {
-	flag.StringVar(&configFile, "config", "configs/scheduler.yaml", "Path to configuration file")
+	rootCmd.AddCommand(runCmd)
+	runCmd.PersistentFlags().StringVar(&configFile, "config", "configs/calendar.yaml", "config file (default is configs/calendar.yaml)")
 }
 
-func main() {
-	flag.Parse()
+var runCmd = &cobra.Command{
+	Use:   "run",
+	Short: "Run application",
+	Long:  `All software has versions. This is application`,
+	Run: func(cmd *cobra.Command, args []string) {
+		run()
+	},
+}
 
-	if flag.Arg(0) == "version" {
-		printVersion()
-		return
+type Config struct {
+	Logger configHandler.LoggerConf `yaml:"logger"`
+	// TODO
+}
+
+func NewConfig(path string) (Config, error) {
+	var config Config
+	err := configHandler.ParseConfig(path, &config)
+	return config, err
+}
+
+func run() {
+	config, err := NewConfig(configFile)
+	if err != nil {
+		fmt.Println("Error handle config:", err)
+		os.Exit(1)
 	}
-
-	config := NewConfig()
 	logg := logger.New(config.Logger.Level)
-
 	storage := memorystorage.New()
 	calendar := app.New(logg, storage)
 
